@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Http\Response;
 use App\Models\Post;
 use Illuminate\Http\Request;
@@ -13,7 +14,9 @@ class PostController extends Controller
      */
     public function index(): View 
     {
-        return view('posts.index');
+        return view('posts.index', [
+            'posts' => Post::with('user')->latest()->get(),
+        ]);
     }
 
     /**
@@ -49,24 +52,40 @@ class PostController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Post $post)
+    public function edit(Post $post): View
     {
-        //
+        Gate::authorize('update', $post);
+ 
+        return view('posts.edit', [
+            'post' => $post,
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Post $post)
+    public function update(Request $request, Post $post): RedirectResponse
     {
-        //
+        Gate::authorize('update', $post);
+ 
+        $validated = $request->validate([
+            'message' => 'required|string|max:255',
+        ]);
+ 
+        $post->update($validated);
+ 
+        return redirect(route('posts.index'));
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Post $post)
+    public function destroy(Post $post): RedirectResponse
     {
-        //
+        Gate::authorize('delete', $post);
+ 
+        $post->delete();
+ 
+        return redirect(route('posts.index'));
     }
 }
