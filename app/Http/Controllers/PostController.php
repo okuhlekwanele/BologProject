@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Http\Response;
 use App\Models\Post;
+use App\Models\Comment;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -17,6 +18,8 @@ class PostController extends Controller
         return view('posts.index', [
             'posts' => Post::with('user')->latest()->get(),
         ]);
+        $posts = Post::with('comments')->get();
+        return view('posts.index', compact('posts'));
     }
 
     /**
@@ -45,9 +48,11 @@ class PostController extends Controller
      * Display the specified resource.
      */
     public function show(Post $post)
-    {
-        //
-    }
+{
+    $comments = Comment::where('post_id', $post->id)->get();
+
+    return view('posts.show', compact('post', 'comments'));
+}
 
     /**
      * Show the form for editing the specified resource.
